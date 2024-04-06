@@ -1,119 +1,41 @@
 #include <windows.h>
 #include <gl/gl.h>
-#include <string.h>
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb-master/stb_easy_font.h"
-#include "stb-master/stb_image.h"
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
 void DisableOpenGL(HWND, HDC, HGLRC);
 
-unsigned int texture;
+void show_button(char *name, float x, float y, float width, float height, float texscale){
 
-void Game_Init()
-{
-int width, height, cnt; //переменные ширины, высоты,
-unsigned char *data = stbi_load("Spritelist.png",&width,&height,&cnt,0);
+    float buffer[1000];
+    int num_quads;
+    float vert[8];
 
-glGenTextures(1, &texture);
-glBindTexture(GL_TEXTURE_2D, texture);
-glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
-glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);
-glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height,
-                            0, cnt == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
-glBindTexture(GL_TEXTURE_2D, 0);
-stbi_image_free(data);
-}
+        vert[0] = vert[6] = x;
+        vert[2] = vert[4] = x + width;
+        vert[1] = vert[3] = y;
+        vert[5] = vert[7] = y + height;
+        num_quads = stb_easy_font_print(0, 0, name, 0, buffer, sizeof(buffer));
+        float textcordx = x + (width - stb_easy_font_width(name) * texscale)/2;
+        float textcordy = y + (height - stb_easy_font_height(name) * texscale)/2;
 
-BOOL visible = FALSE;
-float vertex[] = {-0.65,-0.9,0, 0.65,-0.9,0, 0.65,0.9,0, -0.65,0.9,0};
-float texCoord[] = {0,1, 1,1, 1,0, 0,0};
+        glVertexPointer(2, GL_FLOAT, 0, vert);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glColor3f(0.9, 0.1, 0.1);
+        glDrawArrays(GL_QUADS, 0, 4);
+        glDisableClientState(GL_VERTEX_ARRAY);
 
-void Game_Show()
-{
-        if (!visible) {
-        return;
-    }
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture);
+        glPushMatrix();
+        glTranslatef(textcordx, textcordy, 0);
+        glScalef(texscale, texscale, 1);
 
-    glColor3f(1, 1, 1);
-    glPushMatrix();
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    glVertexPointer(3, GL_FLOAT, 0, vertex);
-    glTexCoordPointer(2, GL_FLOAT, 0, texCoord);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glPopMatrix();
-}
-
-//Кнопки
-void print_string(float x, float y, char *text, float r, float g, float b)
-{
-  static char buffer[99999]; // ~500 chars
-  int num_quads;
-
-  num_quads = stb_easy_font_print(x, y, text, NULL, buffer, sizeof(buffer));
-
-  glColor3f(r,g,b);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glVertexPointer(2, GL_FLOAT, 16, buffer);
-  glDrawArrays(GL_QUADS, 0, num_quads*4);
-  glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-int width, height;
-
-typedef struct{
-char name[20];
-float vert[8];
-BOOL hover;
-} TButton;
-
-TButton btn[] = {
-    {"Spritelist", {0,0, 150,0, 150,60, 0,60}, FALSE},
-    {"Remove", {0,80, 150,80, 150,140, 0,140}, FALSE},
-    {"Exit", {0,160, 150,160, 150,220, 0,220}, FALSE}
-    };
-int btnCnt = sizeof(btn) / sizeof(btn[0]);
-
-
-void TButton_Show(TButton btn)
-{
- glEnableClientState(GL_VERTEX_ARRAY);
- if (btn.hover) glColor3f(1,1,0);
- else glColor3f(0,1,1);
- glVertexPointer(2, GL_FLOAT, 0, btn.vert);
- glDrawArrays(GL_TRIANGLE_FAN,0, 4);
- glDisableClientState(GL_VERTEX_ARRAY);
-
- glPushMatrix();
- glTranslatef(btn.vert[0], btn.vert[1], 0);
- glScalef(2,2,2);
- print_string(3,3, btn.name, 0,0,0);
- glPopMatrix();
-}
-
-BOOL PointInButton(int x, int y, TButton btn)
-{
-return (x > btn.vert[0]) && (x < btn.vert[4]) &&
-       (y > btn.vert[1]) && (y < btn.vert[5]);
-}
-
-void ShowMenu(){
-    glPushMatrix();
-        glLoadIdentity();
-        glOrtho(0, width, height, 0, -1,1);
-        for(int i = 0; i< btnCnt;i++)
-        TButton_Show(btn[i]);
-    glPopMatrix();
+        glVertexPointer(2, GL_FLOAT, 16, buffer);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glColor3f(0, 0, 0);
+        glDrawArrays(GL_QUADS, 0, num_quads * 4);
+        glDisableClientState(GL_VERTEX_ARRAY);
+        glPushMatrix();
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,
@@ -151,11 +73,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
     hwnd = CreateWindowEx(0,
                           "GLSample",
                           "OpenGL Sample",
-WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-                      CW_USEDEFAULT,
-                      CW_USEDEFAULT,
-                          1200,
-                          700,
+                          WS_OVERLAPPEDWINDOW,
+                          CW_USEDEFAULT,
+                          CW_USEDEFAULT,
+                          1000,
+                          600,
                           NULL,
                           NULL,
                           hInstance,
@@ -166,7 +88,9 @@ WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
 
-    Game_Init();
+    RECT rct; //создание переменной с координатами прямоуголника
+    GetClientRect(hwnd, &rct); //получение текущих координат окна
+    glOrtho(0, rct.right, 0, rct.bottom, 1, -1); //выставляем их как координаты окна
 
     /* program main loop */
     while (!bQuit)
@@ -192,10 +116,38 @@ WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            glPushMatrix();
 
-            ShowMenu();
+            glLoadIdentity();
+            glOrtho(0, rct.right, rct.bottom, 0, 1, -1);
+            show_button("animation 1", 20, 20, 200, 60, 3);
 
-Game_Show();
+            glLoadIdentity();
+            glOrtho(0, rct.right, rct.bottom, 0, 1, -1);
+            show_button("animation 2", 20, 100, 200, 60, 3);
+
+            glLoadIdentity();
+            glOrtho(0, rct.right, rct.bottom, 0, 1, -1);
+            show_button("animation 3", 20, 180, 200, 60, 3);
+
+            glLoadIdentity();
+            glOrtho(0, rct.right, rct.bottom, 0, 1, -1);
+            show_button("exit", 20, 260, 200, 60, 3);
+
+            glPushMatrix();
+            /*glTranslatef(516, 516, 0);
+            glRotatef(theta, 0.0f, 0.0f, 1.0f);
+
+            glBegin(GL_TRIANGLES);
+
+                glColor3f(1.0f, 0.0f, 0.0f);   glVertex2f(-250, 250);
+                glColor3f(0.0f, 1.0f, 0.0f);   glVertex2f(-250, -250);
+                glColor3f(0.0f, 0.0f, 1.0f);   glVertex2f(250, -250);
+
+            glEnd();
+
+            glPopMatrix();*/
+
             SwapBuffers(hDC);
 
             theta += 1.0f;
@@ -219,36 +171,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_CLOSE:
             PostQuitMessage(0);
         break;
-
-        case WM_LBUTTONDOWN:
-            for(int i = 0; i < btnCnt; i++)
-            if (PointInButton(LOWORD(lParam), HIWORD(lParam), btn[i])){
-                printf("%s\n", btn[i].name);
-                if (strcmp(btn[i].name, "Spritelist") == 0)
-                visible = TRUE;
-                            if (strcmp(btn[i].name, "Remove") == 0)
-                visible = FALSE;
-                if (strcmp(btn[i].name, "Exit") == 0)
-                    PostQuitMessage(0);
-            }
-            break;
-
-        case WM_MOUSEMOVE:
-            for(int i = 0; i < btnCnt; i++)
-                btn[i].hover = PointInButton(LOWORD(lParam), HIWORD(lParam), btn[i]);
-
-            break;
-
-        case WM_SIZE:
-            width = LOWORD(lParam);
-            height = HIWORD(lParam);
-            glViewport(0,0, width, height);
-            glLoadIdentity();
-            float k = width / (float)height;
-            glOrtho(-k,k, -1,1, -1,1);
-        break;
-
-
 
         case WM_DESTROY:
             return 0;
@@ -308,4 +230,3 @@ void DisableOpenGL (HWND hwnd, HDC hDC, HGLRC hRC)
     wglDeleteContext(hRC);
     ReleaseDC(hwnd, hDC);
 }
-

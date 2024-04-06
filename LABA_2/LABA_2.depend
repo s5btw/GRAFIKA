@@ -1,0 +1,19 @@
+# depslib dependency file v1.0
+1679251093 source:c:\users\İëåìåíò\documents\codeblocks\lab 2\main.c
+	<windows.h>
+	<gl/gl.h>
+	"stb-master/stb_easy_font.h"
+
+1679244587 c:\users\İëåìåíò\documents\codeblocks\lab 2\stb-master\stb_easy_font.h
+	<stdlib.h>
+	<math.h>
+
+1681211715 source:c:\users\zhilk\desktop\ÌÀÊÑÈÌ\grafika\laba_2\main.c
+	<windows.h>
+	<gl/gl.h>
+	"stb-master/stb_easy_font.h"
+
+1679996170 c:\users\zhilk\desktop\ÌÀÊÑÈÌ\grafika\laba_2\stb-master\stb_easy_font.h
+	<stdlib.h>
+	<math.h>
+
