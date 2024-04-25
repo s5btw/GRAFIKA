@@ -69,6 +69,7 @@ typedef struct{
     float x, y, dx, dy;
     const float HERO_HEIGHT = 60.0f;
     const float HERO_WIDTH = 40.5f;
+
 } Hero;
 
 Hero pers;
@@ -278,74 +279,61 @@ void MouseDown()
 }
 
 
-
-void Collision(Hero& hero)
-{
+void Collision(Hero& hero) {
     const float tile_size = 31.5f;
 
-    float left   = hero.x;
-    float right  = hero.x + hero.HERO_WIDTH;
-    float top    = hero.y;
+    float left = hero.x;
+    float right = hero.x + hero.HERO_WIDTH;
+    float top = hero.y;
     float bottom = hero.y + hero.HERO_HEIGHT;
 
+    int left_tile = (int)(floor(left / tile_size));
+    int right_tile = (int)(ceil(right / tile_size));
+    int top_tile = (int)(floor(top / tile_size));
+    int bottom_tile = (int)(ceil(bottom / tile_size));
 
-    int left_tile   = (int)(left / tile_size);
-    int right_tile  = (int)(right / tile_size);
-    int top_tile    = (int)(top / tile_size);
-    int bottom_tile = (int)(bottom / tile_size);
+    for (int i = top_tile; i <= bottom_tile; i++) {
+        for (int j = left_tile; j <= right_tile; j++) {
+            if (TileMap[i][j] == 'B') {
+                float tile_top = i * tile_size;
+                float tile_bottom = (i + 1) * tile_size;
+                float tile_left = j * tile_size;
+                float tile_right = (j + 1) * tile_size;
 
+                // Горизонтальная коллизия
+                if (right > tile_left && left < tile_right) {
+                    // Столкновение с левой стороной тайла
+                    if (hero.dx > 0 && right > tile_left && left < tile_left) {
+                        hero.dx = 0;
+                        hero.x = tile_left - hero.HERO_WIDTH;
+                    }
 
-    for (int i = top_tile; i <= bottom_tile; i++)
-    {
-        for (int j = left_tile; j <= right_tile; j++)
-        {
-            if (TileMap[i][j] == 'B')
-            {
+                    // Столкновение с правой стороной тайла
+                    if (hero.dx < 0 && left < tile_right && right > tile_right) {
+                        hero.dx = 0;
+                        hero.x = tile_right;
+                    }
+                }
 
-                float tile_left   = j * tile_size;
-                float tile_right  = tile_left + tile_size;
-                float tile_top    = i * tile_size;
-                float tile_bottom = tile_top + tile_size;
-
-
-                if (bottom > tile_top && top < tile_bottom)
-                {
-
-                    if (hero.dy > 0 && bottom - hero.dy <= tile_top)
-                    {
+                // Вертикальная коллизия
+                if (bottom > tile_top && top < tile_bottom) {
+                    // Столкновение с верхом тайла
+                    if (hero.dy > 0 && bottom > tile_top && top < tile_top) {
                         hero.dy = 0;
                         hero.y = tile_top - hero.HERO_HEIGHT;
                     }
 
-                    else if (hero.dy < 0 && top - hero.dy >= tile_bottom)
-                    {
+                    // Столкновение с низом тайла
+                    if (hero.dy < 0 && top < tile_bottom && bottom > tile_bottom) {
                         hero.dy = 0;
                         hero.y = tile_bottom;
-                    }
-                }
-
-
-                if (right > tile_left && left < tile_right)
-                {
-
-
-                    if (left < tile_right && hero.dy < 0)
-                    {
-                        hero.dx = 0;
-                        hero.x = tile_right;
-                    }
-
-
-                    else if (right > tile_left && hero.dx + speed > 0 && hero.dy < 0)
-                    {
-                        hero.dx = 0;
-                        hero.x = tile_left;
                     }
                 }
             }
         }
     }
 }
+
 
 
 
