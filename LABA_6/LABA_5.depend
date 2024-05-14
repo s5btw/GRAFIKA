@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1584205422 source:c:\users\zhilk\desktop\Ã¿ —»Ã\grafika\laba_5\laba_5\main.c
+	<windows.h>
+	<gl/gl.h>
+
+1715678444 source:c:\users\zhilk\desktop\Ã¿ —»Ã\grafika\laba_5\main.c
+	<windows.h>
+	<gl/gl.h>
+	<math.h>
+
